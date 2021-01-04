@@ -1,0 +1,71 @@
+﻿@using RoundTheCode.Blash.BlazorWasm.Models
+@using RoundTheCode.Blash.BlazorWasm.Services.Modal
+@inject IModalService modalService
+@if (ModalModel != null)
+{
+<div class="modal">
+    <div class="modal-container">
+        <div class="modal-container-fluid">
+            @if (ModalModel.AllowClose)
+            {
+            <div class="close padding">
+                <a href="javascript:void(0)" @onclick="CloseAsync">
+                    <svg xmlnsXlink="http://www.w3.org/1999/xlink" width="20" height="20" viewBox="0 0 25 25">
+                        <image id="Layer_0" data-name="Layer 0" x="28" y="61" width="20" height="20" xlinkHref="data:img/png;base64,iVBORw0KGgoAAAANSUhEUgAAABkAAAAZCAYAAADE6YVjAAAAK0lEQVRIie3NMQEAAAjDsIJ/z0MBJxeNgVSScKyvA0xMTExMdiYmJm8SYABFYAQu1kYLCAAAAABJRU5ErkJggg==" />
+                        <path className="line" d="M-2,.774L0.793-2.02,27,24.19l-0.8,1.719,0.065,0.345-0.345-.065-1.719.8Z" />
+                        <path className="line" d="M24.195-2l2.794,2.794L0.779,27l-1.719-.8-0.345.065,0.065-.345-0.8-1.719Z" />
+                    </svg>
+                </a>
+            </div>
+            }
+            <div class="padding">
+                <div class="title">
+                    <h2>@ModalModel.Title</h2>
+                </div>
+            </div>
+            <div class="content">
+                <span>@ModalModel.Content</span>
+            </div>
+            @if (ModalModel.ShowButtons)
+            {
+            <div class="buttons">
+                @if (!string.IsNullOrWhiteSpace(ModalModel.SubmitButtonTitle))
+                {
+                <button class="btn-primary" @onclick="SubmitAsync">@ModalModel.SubmitButtonTitle</button>
+                }
+                <button @onclick="CloseAsync">Cancel</button>
+            </div>
+            }
+        </div>
+    </div>
+</div>
+}
+@code {
+    /// <summary>
+    /// A model with all the different properties for the modal.
+    /// </summary>
+    [Parameter]
+    public ModalModel ModalModel { get; set; }
+
+    /// <summary>
+    /// When a modal form is submitted.
+    /// </summary>
+    /// <param name="mouseEventArgs">An instance of <see cref="MouseEventArgs"/>.</param>
+    /// <returns>An instance of <see cref="Task"/>.</returns>
+    public async Task SubmitAsync(MouseEventArgs mouseEventArgs)
+    {
+        StateHasChanged(); // Tell the client that the state has changed.
+        await modalService.SubmitAsync(); // Invoke the submit task.
+    }
+
+    /// <summary>
+    /// When a modal is closed.
+    /// </summary>
+    /// <param name="mouseEventArgs">An instance of <see cref="MouseEventArgs"/>.</param>
+    /// <returns>An instance of <see cref="Task"/>.</returns>
+    public async Task CloseAsync(MouseEventArgs mouseEventArgs)
+    {
+        // Remove the modal from screen.
+        await modalService.DisposeAsync();
+    }
+}

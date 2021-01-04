@@ -1,0 +1,30 @@
+﻿@using RoundTheCode.Blash.BlazorWasm.Services.Modal;
+@using RoundTheCode.Blash.BlazorWasm.Models
+@inject IModalService modalService
+<div class="new-dashboard-container">
+    <div class="title">
+        <button class="btn-primary" @onclick="AddNewDashboardAsync">Add a New Dashboard</button>
+    </div>
+</div>
+@functions {
+    /// <summary>
+    /// Creates a new modal, with the dashboard form needed to be filled out.
+    /// </summary>
+    /// <returns>A type of <see cref="RenderFragment"/>.</returns>
+    public RenderFragment NewDashboardForm() => builder =>
+    {
+        builder.OpenComponent(0, typeof(NewDashboardFormTemplate));
+        builder.CloseComponent();
+    };
+}
+@code {
+    /// <summary>
+    /// Method to display the new dashboard form as a modal.
+    /// </summary>
+    /// <param name="mouseEventArgs">An instance of <see cref="MouseEventArgs"/>.</param>
+    /// <returns>A type of <see cref="Task"/>.</returns>
+    public async Task AddNewDashboardAsync(MouseEventArgs mouseEventArgs)
+    {
+        await modalService.CreateAsync(new ModalModel("Add a New Dashboard", NewDashboardForm(), "Add New Dashboard"));
+    }
+}

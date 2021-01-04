@@ -1,0 +1,35 @@
+﻿@using RoundTheCode.Blash.Data.Data.DashboardObjects;
+@if (Tweet != null && Tweet.Author != null)
+{
+<li>
+    <div class="tweet">
+        <span class="image"><img src="@Tweet.Author.TwitterImageUrl" alt="@Tweet.Author.TwitterName" /></span>
+        <span class="author">@Tweet.Author.TwitterName - <strong>@@@Tweet.Author.TwitterHandle</strong></span>
+        <span class="tweet-content">@((MarkupString)ShowContent((Tweet)))</span>
+        <span class="date">@Tweet.TwitterPublished.ToString("d MMMM yyyy HH:mm")</span>
+    </div>
+</li>
+}
+@functions {
+    /// <summary>
+    /// Shows the content of the tweet. Replace breaklines with their HTML equivalent.
+    /// </summary>
+    /// <param name="tweet">The <see cref="Tweet"/> object.</param>
+    /// <returns>The <see cref="Tweet"/> content.</returns>
+    public static string ShowContent(Tweet tweet)
+    {
+        if (string.IsNullOrWhiteSpace(tweet.Content))
+        {
+            return tweet.Content;
+        }
+
+        return tweet.Content.Replace("\r\n", "<br />");
+    }
+}
+@code {
+    /// <summary>
+    /// The tweet that is being displayed.
+    /// </summary>
+    [Parameter]
+    public Tweet Tweet { get; set; }
+}

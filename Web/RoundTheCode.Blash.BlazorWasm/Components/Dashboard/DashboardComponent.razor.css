@@ -1,0 +1,47 @@
+﻿.title {
+    margin-right: 37.5px;
+    display: inline-block;
+    width: 100%;
+}
+
+.cross {
+    width: 27.5px;
+    height: 27.5px;
+    float: right;
+    text-align: right;
+    margin: 3.75px;
+}
+
+ul {
+    padding: 0;
+    list-style: none;
+}
+
+.dashboard {
+    padding: 15px;
+}
+
+button {
+    border: 0;
+    background-color: transparent;
+}
+
+    button:focus {
+        outline: none;
+    }
+
+::deep .dashboard-container ul li:last-child .tweet {
+    border-bottom: 1px #ccc solid;
+}
+
+.dashboard-container ul li .no-tweets {
+    border-top: 1px #ccc solid;
+    border-left: 1px #ccc solid;
+    border-right: 1px #ccc solid;
+    padding: 7.5px;
+    background-color: #eee;
+}
+
+.dashboard-container ul li:last-child .no-tweets {
+    border-bottom: 1px #ccc solid;
+}

@@ -1,0 +1,75 @@
+﻿@using RoundTheCode.Blash.BlazorWasm.Services.Modal;
+@using RoundTheCode.Blash.BlazorWasm.Models;
+@using RoundTheCode.Blash.BlazorWasm.Components.Dashboard.Templates;
+@inject IModalService modalService
+<div class="col-lg-3 col-md-6 col-12 dashboard">
+    <div>
+        <div class="title">
+            <div class="cross">
+                <button @onclick="DeleteDashboardAsync">
+                    <svg xmlnsXlink="http://www.w3.org/1999/xlink" width="20" height="20" viewBox="0 0 25 25">
+                        <image id="Layer_0" data-name="Layer 0" x="28" y="61" width="20" height="20" xlinkHref="data:img/png;base64,iVBORw0KGgoAAAANSUhEUgAAABkAAAAZCAYAAADE6YVjAAAAK0lEQVRIie3NMQEAAAjDsIJ/z0MBJxeNgVSScKyvA0xMTExMdiYmJm8SYABFYAQu1kYLCAAAAABJRU5ErkJggg==" />
+                        <path className="line" d="M-2,.774L0.793-2.02,27,24.19l-0.8,1.719,0.065,0.345-0.345-.065-1.719.8Z" />
+                        <path className="line" d="M24.195-2l2.794,2.794L0.779,27l-1.719-.8-0.345.065,0.065-.345-0.8-1.719Z" />
+                    </svg>
+                </button>
+            </div>
+            <h2>@DashboardComponentModel.Dashboard.Title</h2>
+        </div>
+    </div>
+    <div class="container px-0 dashboard-container">
+        <div class="row">
+            <div class="col-12">
+                @if (DashboardComponentModel != null && DashboardComponentModel.Tweets != null && DashboardComponentModel.Tweets.Count > 0) 
+                {
+                    <ul>
+                        @foreach (var tweet in DashboardComponentModel.Tweets)
+                        {
+                            <TweetComponent Tweet="@tweet"></TweetComponent>
+                        }
+                    </ul>
+                }
+                else
+                {
+                    <ul>
+                        <li>
+                            <div class="no-tweets">
+                                There are currently no tweets for <strong>@DashboardComponentModel.Dashboard.Title</strong>
+                            </div>
+                        </li>
+                    </ul>
+                }
+            </div>
+        </div>
+    </div>
+</div>
+@functions {
+    /// <summary>
+    /// Creates a new modal which prompts a message to delete a dashboard.
+    /// </summary>
+    /// <returns>A type of <see cref="RenderFragment"/>.</returns>
+    public RenderFragment DeleteDashboard() => builder =>
+    {
+        // Best way of doing this is to store a list of Tweet objects and keep adding.
+        builder.OpenComponent(0, typeof(DeleteDashboardTemplate));
+        builder.AddAttribute(1, "Dashboard", DashboardComponentModel.Dashboard);
+        builder.CloseComponent();
+    };
+}
+@code {
+    /// <summary>
+    /// The dashboard component to delete.
+    /// </summary>
+    [Parameter]
+    public DashboardComponentModel DashboardComponentModel { get; set; }
+
+    /// <summary>
+    /// Method used to call the modal which prompts a message to delete a dashboard.
+    /// </summary>
+    /// <param name="mouseEventArgs">An instance of <see cref="MouseEventArgs"/>.</param>
+    /// <returns>An instance of <see cref="Task"/>.</returns>
+    public async Task DeleteDashboardAsync(MouseEventArgs mouseEventArgs)
+    {
+        await modalService.CreateAsync(new ModalModel("Delete Dashboard", DeleteDashboard(), "Delete Dashboard"));
+    }
+}

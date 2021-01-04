@@ -1,0 +1,60 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.30709.132
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Web", "Web", "{D3E7A783-2747-4592-B2EC-B6815F15444D}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Libraries", "Libraries", "{DB7A2445-6A86-4950-84EF-BB2B521037F9}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RoundTheCode.Blash.Data", "Libraries\RoundTheCode.Blash.Data\RoundTheCode.Blash.Data.csproj", "{0553FD11-3BA1-4400-999D-F7C1F6B1736D}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RoundTheCode.Blash.Shared", "Libraries\RoundTheCode.Blash.Shared\RoundTheCode.Blash.Shared.csproj", "{A7869533-E5BC-41D5-8403-5EC8F294AC7E}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RoundTheCode.Blash.TwitterApi", "Libraries\RoundTheCode.Blash.TwitterApi\RoundTheCode.Blash.TwitterApi.csproj", "{D93F3775-6332-4E6F-AA1B-54B1DDE2D556}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RoundTheCode.Blash.Api", "Web\RoundTheCode.Blash.Api\RoundTheCode.Blash.Api.csproj", "{977D4FFA-3AF4-4A48-8490-F6D9B09614E7}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RoundTheCode.Blash.BlazorWasm", "Web\RoundTheCode.Blash.BlazorWasm\RoundTheCode.Blash.BlazorWasm.csproj", "{9282B97E-CCAB-4B58-99D6-E91697FD3861}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{0553FD11-3BA1-4400-999D-F7C1F6B1736D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0553FD11-3BA1-4400-999D-F7C1F6B1736D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0553FD11-3BA1-4400-999D-F7C1F6B1736D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0553FD11-3BA1-4400-999D-F7C1F6B1736D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A7869533-E5BC-41D5-8403-5EC8F294AC7E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A7869533-E5BC-41D5-8403-5EC8F294AC7E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A7869533-E5BC-41D5-8403-5EC8F294AC7E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A7869533-E5BC-41D5-8403-5EC8F294AC7E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D93F3775-6332-4E6F-AA1B-54B1DDE2D556}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D93F3775-6332-4E6F-AA1B-54B1DDE2D556}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D93F3775-6332-4E6F-AA1B-54B1DDE2D556}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D93F3775-6332-4E6F-AA1B-54B1DDE2D556}.Release|Any CPU.Build.0 = Release|Any CPU
+		{977D4FFA-3AF4-4A48-8490-F6D9B09614E7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{977D4FFA-3AF4-4A48-8490-F6D9B09614E7}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{977D4FFA-3AF4-4A48-8490-F6D9B09614E7}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{977D4FFA-3AF4-4A48-8490-F6D9B09614E7}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9282B97E-CCAB-4B58-99D6-E91697FD3861}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9282B97E-CCAB-4B58-99D6-E91697FD3861}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9282B97E-CCAB-4B58-99D6-E91697FD3861}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9282B97E-CCAB-4B58-99D6-E91697FD3861}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{0553FD11-3BA1-4400-999D-F7C1F6B1736D} = {DB7A2445-6A86-4950-84EF-BB2B521037F9}
+		{A7869533-E5BC-41D5-8403-5EC8F294AC7E} = {DB7A2445-6A86-4950-84EF-BB2B521037F9}
+		{D93F3775-6332-4E6F-AA1B-54B1DDE2D556} = {DB7A2445-6A86-4950-84EF-BB2B521037F9}
+		{977D4FFA-3AF4-4A48-8490-F6D9B09614E7} = {D3E7A783-2747-4592-B2EC-B6815F15444D}
+		{9282B97E-CCAB-4B58-99D6-E91697FD3861} = {D3E7A783-2747-4592-B2EC-B6815F15444D}
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {0C45BA56-A79A-49E0-A6E7-BF36EDFDE21E}
+	EndGlobalSection
+EndGlobal

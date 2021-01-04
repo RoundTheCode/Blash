@@ -1,0 +1,38 @@
+﻿.tweet {
+    border-top: 1px #ccc solid;
+    border-left: 1px #ccc solid;
+    border-right: 1px #ccc solid;
+    padding: 7.5px;
+    background-color: #eee;
+}
+
+.image, .author {
+    display: inline-block;
+}
+
+.image {
+    width: 55.5px;
+    height: 63px;
+    padding: 7.5px 0 7.5px 7.5px;
+}
+
+.image img {
+    border-radius: 50%;
+}
+
+.tweet-content, .date {
+    display: block;
+}
+
+.date {
+    font-size: 0.75rem;
+}
+
+.tweet span:not(.image) {
+    padding: 7.5px;
+}
+
+.tweet-content img {
+    max-width: 100%;
+    height: auto;
+}

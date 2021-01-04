@@ -1,0 +1,87 @@
+﻿.modal {
+    display: block;
+    position: fixed;
+    z-index: 9999999999;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    right: 0;
+    overflow-x: hidden !important;
+    overflow-y: auto !important;
+    background-color: rgb(0,0,0); /* Fallback color */
+    background-color: rgba(0,0,0,0.6); /* Black w/ opacity */
+    min-height: 100px;
+    min-width: 100px;
+    height: 100%;
+    width: 100%;
+    padding: 60px 60px 0 60px;
+
+
+}
+
+@media (max-width: 1199px) {
+    .modal {
+        padding: 0;
+    }
+}
+
+@media (max-height: 600px) {
+    .modal {
+        padding-top: 0;
+        padding-bottom: 0;
+    }
+}
+
+.modal-container {
+    background-color: #fff;
+    width: 100%;
+    margin-left: auto;
+    margin-right: auto;
+    margin-bottom: 15px;
+    max-width: 1090px;
+}
+
+.modal-container-fluid {
+    position: relative;
+    width:100%;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.close {
+    position: absolute;
+    cursor: default;
+    right: 0;
+    margin-top: 5px;
+    right: 5px;
+}
+
+.close svg path.line {
+    fill: #eee;
+    fill-rule: evenodd;
+}
+
+.padding {
+    padding: 15px;
+}
+
+.title {
+    color: #000;
+}
+
+h2 {
+    border-bottom: 3px #eee solid;
+    margin: 0;
+    padding-bottom: 15px;
+}
+
+.content, .buttons {
+    padding: 0 15px 15px;
+}
+
+button {
+    border: 1px #ddd solid;
+}
+button:focus {
+    outline: none;
+}

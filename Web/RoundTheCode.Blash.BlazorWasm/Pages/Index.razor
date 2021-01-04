@@ -1,0 +1,286 @@
+﻿@using RoundTheCode.Blash.Data.Results.CreateTweetObjects
+@using RoundTheCode.Blash.Data.Results
+@using Microsoft.AspNetCore.SignalR.Client;
+@using RoundTheCode.Blash.BlazorWasm.Services.Api;
+@using RoundTheCode.Blash.BlazorWasm.Services.Dashboard;
+@using RoundTheCode.Blash.BlazorWasm.Services.Loader;
+@using RoundTheCode.Blash.BlazorWasm.Services.Modal;
+@using RoundTheCode.Blash.BlazorWasm.Components.Dashboard.Templates;
+@using RoundTheCode.Blash.BlazorWasm.Components.Dashboard;
+@using RoundTheCode.Blash.BlazorWasm.Components.Error.Templates;
+@using RoundTheCode.Blash.BlazorWasm.Models;
+@inject IApiService apiService
+@inject IDashboardService dashboardService
+@inject ILoaderService loaderService
+@inject IModalService modalService
+@page "/"
+<div class="container-fluid px-0">
+    <div class="row">
+        <div class="col-12">
+            <div class="logo">
+                <a href="https://www.roundthecode.com?utm_source=Blash&utm_medium=referral&utm_action=click">
+                    <img class="full" src="/img/RoundTheCodeLogo.png" alt="Round The Code" />
+                    <img class="tablet" src="/img/RoundTheCodeLogo-tablet.png" alt="Round The Code" />
+                </a>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-12">
+            <h1>Blash</h1>
+        </div>
+        <div class="col-12">
+            @if (DashboardComponents == null || DashboardComponents.Count <= 3)
+            {
+                <NewDashboardTemplate></NewDashboardTemplate>
+            }
+        </div>
+    </div>
+</div>
+<div class="container-fluid px-0">
+    <div class="row">
+        <div class="col-12">
+            <div class="container-fluid px-0">
+                <div class="row">
+                    @if (DashboardComponents != null)
+                    {
+                        @foreach (var dashboardComponent in DashboardComponents)
+                        {
+                            <DashboardComponent DashboardComponentModel="@dashboardComponent"></DashboardComponent>
+                        }
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+@functions {
+    /// <summary>
+    /// Loads all the dashboards onto the page.
+    /// </summary>
+    /// <returns>An instance of <see cref="Task"/>.</returns>
+    public async Task LoadDashboardsAsync()
+    {
+        await loaderService.CreateAsync(); // Display the loader.
+
+        DashboardComponents = new List<DashboardComponentModel>(); // A list of the dashboard's models.
+
+        var dashboardData = await dashboardService.GetDashboardAndTweetsAsync(); // Get all dashboards and it's tweets.
+
+        if (dashboardData != null)
+        {
+            foreach (var data in dashboardData)
+            {
+                // Each dashboard, create a new instance of DashboardComponentModel, specifying the dashboard & it's tweets.
+                DashboardComponents.Add(new DashboardComponentModel { Dashboard = data.Dashboard, Tweets = data.Tweets });
+            }
+            StateHasChanged(); // Refresh the page.
+        }
+
+        await loaderService.DisposeAsync(); // Remove the loader.
+    }
+
+    /// <summary>
+    /// Sync up the dashboards.
+    /// </summary>
+    /// <returns>An instance of <see cref="Task"/>.</returns>
+    public async Task ReloadDashboardsAsync()
+    {
+        await modalService.DisposeAsync(); // Remove any modals which might be displayed when the client disconnected from SignalR.
+        await LoadDashboardsAsync(); // Reload the dashboards.
+    }
+
+    /// <summary>
+    /// The fragment used to display when the client is trying to re-connect to the SignalR hub.
+    /// </summary>
+    /// <returns>A type of <see cref="RenderFragment"/>.</returns>
+    public RenderFragment HubReconnectingModal() => builder =>
+    {
+        builder.OpenComponent(0, typeof(HubReconnectingTemplate));
+        builder.CloseComponent();
+    };
+
+    /// <summary>
+    /// The fragment used to display when the client has disconnected from the SignalR hub.
+    /// </summary>
+    /// <returns>A type of <see cref="RenderFragment"/>.</returns>
+    public RenderFragment HubConnectionWait() => builder =>
+    {
+        builder.OpenComponent(0, typeof(HubConnectionWaitTemplate));
+        builder.CloseComponent();
+    };
+
+    /// <summary>
+    /// Attempt to establish the connection with the SignalR hub.
+    /// </summary>
+    /// <returns>A type of <see cref="Task"/>.</returns>
+    public async Task StartHubAsync()
+    {
+        HubConnectionState state;
+        while (true)
+        {
+            state = await apiService.AttemptToStartHubConnectionAsync(); // Attempt to connect to the SignalR hub.
+
+            if (state == HubConnectionState.Connected)
+            {
+                // Connected, so load (or reload) the dashboards.
+                await ReloadDashboardsAsync();
+                return;
+            }
+
+            await loaderService.DisposeAsync(); // Remove the loader.
+            await modalService.CreateAsync(new ModalModel("Unable to Connect to the Server", HubConnectionWait(), string.Empty, false, false)); // Show a message saying unable to connect to the SignalR hub.
+            await Task.Delay(new TimeSpan(0, 0, 30)); // Wait 30 seconds before trying again.
+            await modalService.CreateAsync(new ModalModel("Reconnecting to the Server", HubReconnectingModal(), string.Empty, false, false)); // Show a message saying it's trying to reconnect to the SignalR hub.
+        }
+    }
+}
+@code {
+    /// <summary>
+    /// A list of dashboard's and it's properties.
+    /// </summary>
+    public List<DashboardComponentModel> DashboardComponents { get; set; }
+
+    /// <summary>
+    /// When initialising the razor component.
+    /// </summary>
+    /// <returns>A type of <see cref="Task"/>.</returns>
+    protected async override Task OnInitializedAsync()
+    {
+        await loaderService.CreateAsync(); // Show loader.
+        await StartHubAsync(); // Attempt to connect to the SignalR hub.
+
+        apiService.OnHubReconnectingAsync += async (Exception exception) =>
+        {
+            // Show modal when method is invoked.
+            await modalService.CreateAsync(new ModalModel("Reconnecting to the Server", HubReconnectingModal(), string.Empty, false, false));
+        };
+
+        apiService.OnHubClosedAsync += async (Exception exception) =>
+        {
+            // Show modal attempting to reconnect to the SignalR hub when it loses connection.
+            await modalService.CreateAsync(new ModalModel("Reconnecting to the Server", HubReconnectingModal(), string.Empty, false, false));
+
+            await StartHubAsync(); // Attempt to re-connect to the SignalR hub.
+        };
+
+       
+        apiService.OnHubReconnectedAsync += async (string connectionId) =>
+        {
+            // If hub is reconnected, reload the dashboards.
+            await ReloadDashboardsAsync();
+        };
+
+        apiService.OnTweetCreatedAsync += async (CreateTweetResult createTweetModel) =>
+        {
+            // When a tweet is created, add it to the relevant dashboards.
+            foreach (var data in createTweetModel.Data)
+            {
+                if (data.DashboardTweets != null)
+                {
+                    foreach (var dashboardTweet in data.DashboardTweets)
+                    {
+                        var dashboard = DashboardComponents.FirstOrDefault(dashboard => dashboard.Dashboard.Id == dashboardTweet.DashboardId); // Check the dashboard exists.
+
+                        if (dashboard != null)
+                        {
+                            // Add the tweet to the dashboard.
+                            dashboard.Tweets = dashboard.Tweets ?? new List<Data.Data.DashboardObjects.Tweet>();
+                            dashboard.Tweets.Add(data.Tweet);
+                            dashboard.Tweets = dashboard.Tweets.OrderByDescending(t => t.TwitterPublished).ToList();
+                        }
+                    }
+                }
+            }
+
+            StateHasChanged(); // Refresh the page.
+            await Task.CompletedTask;
+        };
+
+        apiService.OnRecentTweetsSyncAsync += async (List<DashboardAndTweetsResult> dashboardTweets, bool refresh) =>
+        {
+            // When the tweets are synced up.
+
+            if (DashboardComponents != null)
+            {
+                if (refresh)
+                {
+                    // Create a new instance of all the dashboards.
+                    DashboardComponents = new List<DashboardComponentModel>();
+                }
+                foreach (var dashboardTweet in dashboardTweets)
+                {
+                    // Add each dashboard and it's tweets.
+                    DashboardComponents.Add(new DashboardComponentModel { Dashboard = dashboardTweet.Dashboard, Tweets = dashboardTweet.Tweets });
+                }
+                StateHasChanged(); // Refresh the page.
+            }
+            await Task.CompletedTask;
+        };
+
+        apiService.OnDashboardCreatedAsync += async (List<DashboardAndTweetsResult> dashboardTweets) =>
+        {
+            // When a dashboard has been created.
+            if (DashboardComponents != null)
+            {
+                // Add all the new dashboards and their tweets that have been created.
+                foreach (var dashboardTweet in dashboardTweets)
+                {
+                    if (!DashboardComponents.Any(dashboard => dashboard.Dashboard.Id == dashboardTweet.Dashboard.Id))
+                    {
+                        DashboardComponents.Add(new DashboardComponentModel { Dashboard = dashboardTweet.Dashboard, Tweets = new List<Data.Data.DashboardObjects.Tweet>() });
+                    }
+                }
+                StateHasChanged(); // Refresh the page.
+            }
+            await Task.CompletedTask;
+        };
+
+        apiService.OnDashboardDeletedAsync += async (int id) =>
+        {
+            // When a dashboard has been deleted.
+            if (DashboardComponents != null)
+            {
+                // Check the dashboard exists.
+                var dashboard = DashboardComponents.FirstOrDefault(dashboard => dashboard.Dashboard.Id == id);
+
+                if (dashboard != null)
+                {
+                    DashboardComponents.Remove(dashboard); // Remove the dashboard.
+                    StateHasChanged(); // Update the page.
+                }
+            }
+            await Task.CompletedTask;
+        };
+
+        apiService.OnDashboardTweetDeletedAsync += async (IList<Data.Data.DashboardObjects.DashboardTweet> dashboardTweetsToDelete) =>
+        {
+            // Delete tweets from dashboard.
+            if (dashboardTweetsToDelete != null)
+            {
+                foreach (var dashboardTweetToDelete in dashboardTweetsToDelete)
+                {
+                    // Does the dashboard exist?
+                    var dashboardWithTweet = DashboardComponents.FirstOrDefault(dashboard => dashboard.Dashboard.Id == dashboardTweetToDelete.DashboardId);
+
+                    if (dashboardWithTweet != null)
+                    {
+                        // Does the tweet exist in the dashboard found?
+                        var tweet = dashboardWithTweet.Tweets.FirstOrDefault(tweet => tweet.Id == dashboardTweetToDelete.TweetId);
+
+                        if (tweet != null)
+                        {
+                            // Tweet found so delete it.
+                            dashboardWithTweet.Tweets.Remove(tweet);
+                            StateHasChanged(); // Update page.
+                        }
+                    }
+                }
+            }
+
+            await Task.CompletedTask;
+        };
+
+        await base.OnInitializedAsync();
+    }
+}

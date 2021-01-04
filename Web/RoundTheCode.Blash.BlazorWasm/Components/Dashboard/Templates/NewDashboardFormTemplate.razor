@@ -1,0 +1,53 @@
+﻿@using RoundTheCode.Blash.BlazorWasm.Services.Modal;
+@using RoundTheCode.Blash.BlazorWasm.Services.Dashboard;
+@using RoundTheCode.Blash.BlazorWasm.Components.Error.Templates;
+@using RoundTheCode.Blash.BlazorWasm.Models;
+@using RoundTheCode.Blash.Data.Models;
+@inject IModalService modalService
+@inject IDashboardService dashboardService
+
+<p>Fill out the box below to add a new dashboard.</p>
+<input type="text" @bind-value="DashboardModel.Title" />
+@functions {
+    /// <summary>
+    /// Creates a new modal with an error message.
+    /// </summary>
+    /// <param name="message">The message to be displayed to the user.</param>
+    /// <returns>A type of <see cref="RenderFragment"/>.</returns>
+    public RenderFragment ErrorModal(string message) => builder =>
+    {
+        builder.OpenComponent(0, typeof(ErrorTemplate));
+        builder.AddAttribute(1, "Message", message);
+
+        builder.CloseComponent();
+    };
+}
+@code {
+    /// <summary>
+    /// Model used to create a dashboard.
+    /// </summary>
+    public DashboardModel DashboardModel { get; set; }
+
+    /// <summary>
+    /// When the razor component is initalised.
+    /// </summary>
+    /// <returns>An instance of <see cref="Task"/>.</returns>
+    protected override async Task  OnInitializedAsync()
+    {
+        DashboardModel = new DashboardModel();
+
+        modalService.OnSubmitAsync += async () =>
+        {
+            // Call the API to create a new dashboard.
+            await dashboardService.CreateDashboardAsync(DashboardModel);
+
+        };
+        modalService.OnErrorAsync += async (Exception exception) =>
+        {
+            // Create a new modal, stating there has been an issue with deleting the modal.
+            await modalService.CreateAsync(new ModalModel("Error with Dashboard", ErrorModal("Unable to create the dashboard due to an error."), string.Empty));
+        };
+
+        await base.OnInitializedAsync();
+    }
+}

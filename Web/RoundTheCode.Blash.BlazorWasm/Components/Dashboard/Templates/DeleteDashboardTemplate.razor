@@ -1,0 +1,56 @@
+﻿@using RoundTheCode.Blash.Data.Data.DashboardObjects;
+@using RoundTheCode.Blash.BlazorWasm.Services.Modal;
+@using RoundTheCode.Blash.BlazorWasm.Models;
+@using RoundTheCode.Blash.BlazorWasm.Services.Dashboard;
+@using RoundTheCode.Blash.BlazorWasm.Components.Error.Templates
+@inject IModalService modalService
+@inject IDashboardService dashboardService
+@if (Dashboard != null)
+{
+    <p>Are you sure you wish to delete '@Dashboard.Title' dashboard?</p>
+}
+@functions {
+    /// <summary>
+    /// Creates a new modal with an error message.
+    /// </summary>
+    /// <param name="message">The message to be displayed to the user.</param>
+    /// <returns>A type of <see cref="RenderFragment"/>.</returns>
+    public RenderFragment ErrorModal(string message) => builder =>
+    {
+        // Create a new error modal with the error message.
+        builder.OpenComponent(0, typeof(ErrorTemplate));
+        builder.AddAttribute(1, "Message", message);
+
+        builder.CloseComponent();
+    };
+}
+@code {
+    /// <summary>
+    /// The dashboard object to delete.
+    /// </summary>
+    [Parameter]
+    public Dashboard Dashboard { get; set; }
+
+    /// <summary>
+    /// When the razor component is initalised.
+    /// </summary>
+    /// <returns>An instance of <see cref="Task"/>.</returns>
+    protected override async Task OnInitializedAsync()
+    {
+        modalService.OnSubmitAsync += async () =>
+        {
+            // When modal is submitted, delete the dashboard by calling the API.
+            if (Dashboard != null)
+            {
+                await dashboardService.DeleteAsync(Dashboard.Id);
+            }
+        };
+        modalService.OnErrorAsync += async (Exception exception) =>
+        {
+            // Create a new modal, stating there has been an issue with deleting the modal.
+            await modalService.CreateAsync(new ModalModel("Error with Dashboard", ErrorModal("Unable to delete the dashboard due to an error."), string.Empty));
+        };
+
+        await base.OnInitializedAsync();
+    }
+}

@@ -1,0 +1,95 @@
+﻿@inherits LayoutComponentBase
+@using BlazorWasm.Services.Modal
+@using BlazorWasm.Services.Loader
+@using BlazorWasm.Services.Api
+@using BlazorWasm.Components.Modal
+@using BlazorWasm.Components.Loader
+
+@inject IModalService modalService
+@inject ILoaderService loaderService
+@inject IApiService apiService
+<div class="container-fluid">
+    @Modal
+    @Loader
+    @Body
+</div>
+@functions {
+    /// <summary>
+    /// Creates a new modal.
+    /// </summary>
+    /// <returns>A type of <see cref="RenderFragment"/>.</returns>
+    public RenderFragment CreateModal() => builder =>
+    {
+        if (modalService.ModalModel != null)
+        {
+            // Best way of doing this is to store a list of Tweet objects and keep adding.
+            builder.OpenComponent(0, typeof(ModalComponent));
+            builder.AddAttribute(1, "ModalModel", modalService.ModalModel);
+            builder.CloseComponent();
+        }
+    };
+
+    /// <summary>
+    /// Creates the loader.
+    /// </summary>
+    /// <returns>A type of <see cref="RenderFragment"/>.</returns>
+    public RenderFragment CreateLoader() => builder =>
+    {
+        // Best way of doing this is to store a list of Tweet objects and keep adding.
+        builder.OpenComponent(0, typeof(LoaderComponent));
+        builder.CloseComponent();
+    };
+}
+@code {
+    /// <summary>
+    /// The modal component.
+    /// </summary>
+    public RenderFragment Modal { get; set; }
+
+    /// <summary>
+    /// The loader component.
+    /// </summary>
+    public RenderFragment Loader { get; set; }
+
+
+    protected override async Task OnInitializedAsync()
+    {
+        modalService.OnOpenAsync += async () =>
+        {
+            // When the modal is opened.
+            await Task.Run(() =>
+            {
+                Modal = CreateModal(); // Create a new modal.
+                StateHasChanged(); // Refresh the page.
+            });
+        };
+        loaderService.OnShowAsync += async () =>
+        {
+            // When the loader is shown.
+            await Task.Run(() =>
+            {
+                Loader = CreateLoader(); // Show the loader.
+                StateHasChanged(); // Refresh the page.
+            });
+        };
+        loaderService.OnHideAsync += async () =>
+        {
+            // When the loader is hidden.
+            await Task.Run(() =>
+            {
+                Loader = null; // Remove the loader.
+                StateHasChanged(); // Refresh the page.
+            });
+        };
+        modalService.OnCloseAsync += async () =>
+        {
+            // When the modal is closed.
+            await Task.Run(() =>
+            {
+                Modal = null; // Remove the modal.
+                StateHasChanged(); // Refresh the page.
+            });
+        };
+        await Task.CompletedTask;
+    }
+}
