@@ -83,38 +83,32 @@ namespace RoundTheCode.Blash.Api.Background.Tasks
 
                         order++;
                         Dashboard dashboard = null;
+        
+                        // See if the dashboard exists in the database, based on the rule identifier from the Twitter API.
+                        dashboard = await dashboardService.GetByTwitterRuleAsync(ruleEntry.Id);
+                        var dashboardCreate = dashboard == null;
 
-                        // Begin the database transaction.
-                        using (var dbContextTransaction = blashDbContext.Database.BeginTransaction())
+                        if (dashboardCreate)
                         {
-                            // See if the dashboard exists in the database, based on the rule identifier from the Twitter API.
-                            dashboard = await dashboardService.GetByTwitterRuleAsync(ruleEntry.Id);
-                            var dashboardCreate = dashboard == null;
-
-                            if (dashboardCreate)
-                            {
-                                // Create a new dashboard if it doesn't exist in the database.
-                                dashboard = new Dashboard();
-                            }
-                            dashboard.TwitterRuleId = ruleEntry.Id;
-                            dashboard.Title = ruleEntry.Tag;
-                            dashboard.SearchQuery = ruleEntry.Value;
-                            dashboard.Order = order;
-
-                            if (dashboardCreate)
-                            {
-                                // Create the dashboard to the database.
-                                await dashboardService.CreateAsync(dashboard);
-                            }
-                            else
-                            {
-                                // Update the dashboard to the database.
-                                await dashboardService.UpdateAsync(dashboard.Id, dashboard);
-                            }
-
-                            // Commit the queries to the database.
-                            await dbContextTransaction.CommitAsync();
+                            // Create a new dashboard if it doesn't exist in the database.
+                            dashboard = new Dashboard();
                         }
+                        dashboard.TwitterRuleId = ruleEntry.Id;
+                        dashboard.Title = ruleEntry.Tag;
+                        dashboard.SearchQuery = ruleEntry.Value;
+                        dashboard.Order = order;
+
+                        if (dashboardCreate)
+                        {
+                            // Create the dashboard to the database.
+                            await dashboardService.CreateAsync(dashboard);
+                        }
+                        else
+                        {
+                            // Update the dashboard to the database.
+                            await dashboardService.UpdateAsync(dashboard.Id, dashboard);
+                        }
+                        
 
                         // Acknowledge that the dashboard has been updated.
                         updatedDashboardIds.Add(dashboard.Id);

@@ -102,7 +102,7 @@ namespace RoundTheCode.Blash.Api.Background.Tasks
                     var dashboards = new List<Dashboard>();
                     IList<DashboardTweet> dashboardTweetsToDelete = null;
 
-                    using (var dbContextTransaction = blashDbContext.Database.BeginTransaction())
+                    using (var dbContextTransaction = await blashDbContext.Database.BeginTransactionAsync())
                     {
                         // Go through each rule that matches a tweet from the Twitter API.
                         foreach (var matchingRule in searchStreamResult.MatchingRules)

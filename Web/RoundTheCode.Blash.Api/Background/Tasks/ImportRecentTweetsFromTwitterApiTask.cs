@@ -88,7 +88,7 @@ namespace RoundTheCode.Blash.Api.Background.Tasks
 
                 List<Dashboard> dashboards = null;
 
-                using (var dbContextTransaction = blashDbContext.Database.BeginTransaction())
+                using (var dbContextTransaction = await blashDbContext.Database.BeginTransactionAsync())
                 {
                     _logger.LogWithParameters(LogLevel.Debug, "Get all dashboards from database", parameters);
                     dashboards = _dashboard != null ? new List<Dashboard> { _dashboard } : await dashboardService.GetAllAsync(); // Get all dashboards (or one if we have specified a dashboard).
@@ -112,10 +112,18 @@ namespace RoundTheCode.Blash.Api.Background.Tasks
 
                         // Get recent tweets based on the dashboard's search query.
                         _logger.LogWithParameters(LogLevel.Debug, "Get recent tweets from Twitter API.", recentTweetSearchParameters);
-                        recentTweets = await _twitterApiTweetService.GetRecentTweetsAsync(dashboard.SearchQuery, maxResults);
-                        _logger.LogWithParameters(LogLevel.Debug, string.Format("{0} recent tweet{1} returned from the Twitter API.", recentTweets.Tweets != null ? recentTweets.Tweets.Count : "0", recentTweets.Tweets == null || recentTweets.Tweets.Count() != 1 ? "s" : ""), recentTweetSearchParameters);
+                        try
+                        {
+                            recentTweets = await _twitterApiTweetService.GetRecentTweetsAsync(dashboard.SearchQuery, maxResults);
+                        }
+                        catch (Exception)
+                        {
+                            // Set as null if the API throws an exception.
+                            recentTweets = null;
+                        }
+                        _logger.LogWithParameters(LogLevel.Debug, string.Format("{0} recent tweet{1} returned from the Twitter API.", recentTweets != null && recentTweets.Tweets != null ? recentTweets.Tweets.Count : "0", recentTweets == null || recentTweets.Tweets == null || recentTweets.Tweets.Count() != 1 ? "s" : ""), recentTweetSearchParameters);
 
-                        if (recentTweets.Tweets == null || recentTweets.Tweets.Count == 0)
+                        if (recentTweets == null || recentTweets.Tweets == null || recentTweets.Tweets.Count == 0)
                         {
                             continue;
                         }
