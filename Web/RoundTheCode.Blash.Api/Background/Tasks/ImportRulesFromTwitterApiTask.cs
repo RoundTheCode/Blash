@@ -54,7 +54,9 @@ namespace RoundTheCode.Blash.Api.Background.Tasks
                 // Get rules from the Twitter API
                 _logger.LogWithParameters(LogLevel.Debug, "Get Stream Rules from Twitter API", parameters);
                 var rules = await _twitterApiRuleService.GetStreamRulesAsync();
-                _logger.LogWithParameters(LogLevel.Debug, string.Format("{0} rule{1} returned from Twitter API", rules.RuleEntries.Count, rules.RuleEntries.Count() != 1 ? "s" : ""), parameters);
+                _logger.LogWithParameters(LogLevel.Debug, string.Format("{0} rule{1} returned from Twitter API", (rules.RuleEntries != null ? rules.RuleEntries.Count : 0), rules.RuleEntries == null || rules.RuleEntries.Count() != 1 ? "s" : ""), parameters);
+
+
 
                 // Create a new scope from the service provider.
                 using (var scope = _serviceProvider.CreateScope())
@@ -70,51 +72,54 @@ namespace RoundTheCode.Blash.Api.Background.Tasks
                     var updatedDashboardIds = new List<int>();
 
                     // For each rule, create or update it to the database.
-                    foreach (var ruleEntry in rules.RuleEntries)
+                    if (rules.RuleEntries != null)
                     {
-                        var dashboardParameters = new Dictionary<string, object>();
-                        foreach (var param in parameters)
+                        foreach (var ruleEntry in rules.RuleEntries)
                         {
-                            dashboardParameters.Add(param.Key, param.Value);
+                            var dashboardParameters = new Dictionary<string, object>();
+                            foreach (var param in parameters)
+                            {
+                                dashboardParameters.Add(param.Key, param.Value);
+                            }
+                            dashboardParameters.Add("Twitter API Rule ID", ruleEntry.Id);
+
+                            _logger.LogWithParameters(LogLevel.Information, "Start Importing Role", dashboardParameters);
+
+                            order++;
+                            Dashboard dashboard = null;
+
+                            // See if the dashboard exists in the database, based on the rule identifier from the Twitter API.
+                            dashboard = await dashboardService.GetByTwitterRuleAsync(ruleEntry.Id);
+                            var dashboardCreate = dashboard == null;
+
+                            if (dashboardCreate)
+                            {
+                                // Create a new dashboard if it doesn't exist in the database.
+                                dashboard = new Dashboard();
+                            }
+                            dashboard.TwitterRuleId = ruleEntry.Id;
+                            dashboard.Title = ruleEntry.Tag;
+                            dashboard.SearchQuery = ruleEntry.Value;
+                            dashboard.Order = order;
+
+                            if (dashboardCreate)
+                            {
+                                // Create the dashboard to the database.
+                                await dashboardService.CreateAsync(dashboard);
+                            }
+                            else
+                            {
+                                // Update the dashboard to the database.
+                                await dashboardService.UpdateAsync(dashboard.Id, dashboard);
+                            }
+
+
+                            // Acknowledge that the dashboard has been updated.
+                            updatedDashboardIds.Add(dashboard.Id);
+
+                            _logger.LogWithParameters(LogLevel.Debug, string.Format("Rule has been imported to Dashboard (id: '{0}').", dashboard.Id), dashboardParameters);
+                            _logger.LogWithParameters(LogLevel.Information, "Finish importing rule", dashboardParameters);
                         }
-                        dashboardParameters.Add("Twitter API Rule ID", ruleEntry.Id);
-
-                        _logger.LogWithParameters(LogLevel.Information, "Start Importing Role", dashboardParameters);
-
-                        order++;
-                        Dashboard dashboard = null;
-        
-                        // See if the dashboard exists in the database, based on the rule identifier from the Twitter API.
-                        dashboard = await dashboardService.GetByTwitterRuleAsync(ruleEntry.Id);
-                        var dashboardCreate = dashboard == null;
-
-                        if (dashboardCreate)
-                        {
-                            // Create a new dashboard if it doesn't exist in the database.
-                            dashboard = new Dashboard();
-                        }
-                        dashboard.TwitterRuleId = ruleEntry.Id;
-                        dashboard.Title = ruleEntry.Tag;
-                        dashboard.SearchQuery = ruleEntry.Value;
-                        dashboard.Order = order;
-
-                        if (dashboardCreate)
-                        {
-                            // Create the dashboard to the database.
-                            await dashboardService.CreateAsync(dashboard);
-                        }
-                        else
-                        {
-                            // Update the dashboard to the database.
-                            await dashboardService.UpdateAsync(dashboard.Id, dashboard);
-                        }
-                        
-
-                        // Acknowledge that the dashboard has been updated.
-                        updatedDashboardIds.Add(dashboard.Id);
-                        
-                        _logger.LogWithParameters(LogLevel.Debug, string.Format("Rule has been imported to Dashboard (id: '{0}').", dashboard.Id), dashboardParameters);
-                        _logger.LogWithParameters(LogLevel.Information, "Finish importing rule", dashboardParameters);
                     }
 
                     // Remove any missing dashboards & tweets from the database.
