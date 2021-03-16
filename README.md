@@ -1,3 +1,3 @@
 # Documentation
 
-Full documentation is available at https://www.roundthecode.com/code-examples/blash
+Full documentation is available at https://www.roundthecode.com/examples/blash
