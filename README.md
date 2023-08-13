@@ -1,3 +1,3 @@
 # Documentation
 
-Full documentation is available at https://www.roundthecode.com/dotnet-samples/blash
+Documentation is no longer available as we believe this application no longer works. However, you can still explore the code for yourself.
